@@ -1,3 +1,3 @@
-module github.com/markdingo/cslb
+module github.com/rudderlabs/cslb
 
 go 1.21

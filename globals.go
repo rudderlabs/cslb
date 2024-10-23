@@ -15,7 +15,10 @@ because in a normal application only one cslb is created and it lives for the li
 */
 
 import (
+	"fmt"
 	"net/http"
+	"os"
+	"strconv"
 	"sync"
 )
 
@@ -24,10 +27,34 @@ var (
 	currentCSLB *cslb        // be sure they are working with a known initial state.
 )
 
-// init enables the http DefaultTransport for CSLB processing. Perhaps we should have an env
-// variable to control this or possibly not even enable it by default?
+// init enables the http DefaultTransport for CSLB processing if cslb_auto_init_enabled env is enabled.
 func init() {
-	realInit().start()
+	if isAutoInitEnabled() {
+		realInit().start()
+	}
+}
+
+func isAutoInitEnabled() bool {
+	autoInit, ok := os.LookupEnv(cslbEnvPrefix + "auto_init_enabled")
+	if !ok {
+		return false
+	}
+	autoInitFlag, err := strconv.ParseBool(autoInit)
+	if err != nil {
+		fmt.Println("Error parsing boolean environment variable cslb_auto_init_enabled :", err)
+		return false
+	}
+	return autoInitFlag
+}
+
+// Setup initializes the CSLB system. Users of this method is responsible for enabling
+// cslb on the http transport
+func Setup() {
+	if isAutoInitEnabled() {
+		return
+	}
+	cslb := setCSLB(newCslb())
+	cslb.start()
 }
 
 // realInit is separated out from init() so tests can call it multiple times without knowing the

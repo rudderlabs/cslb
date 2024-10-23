@@ -40,6 +40,7 @@ the cslb.Enable() function, i.e.:
 
 	func main() {
 	        myTransport := http.Transport{...}
+					cslb.Setup()
 	        cslb.Enable(myTransport)
 	        client := &http.Client{Transport: myTransport}
 	        resp, err := client.Get("http://mydomain/resource")
